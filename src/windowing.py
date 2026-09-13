@@ -7,27 +7,18 @@ def create_windows(
     window_size=50,
     step=25
 ):
-    """
-    Tạo các cửa sổ thời gian từ dữ liệu cảm biến.
-
-    Input:
-        data: DataFrame
-              Cột đầu tiên là label,
-              các cột còn lại là features.
-
-    Output:
-        X: numpy array có shape
-           (số_window, window_size, số_feature)
-
-        y: numpy array có shape
-           (số_window,)
-    """
-
     # Cột đầu tiên là label
     labels = data.iloc[:, 0]
 
     # Các cột còn lại là features
     features = data.iloc[:, 1:].to_numpy()
+
+    # Tạo mapping label tự động, hỗ trợ nhiều class
+    unique_labels = sorted(labels.unique())
+    label_to_id = {
+        label: idx
+        for idx, label in enumerate(unique_labels)
+    }
 
     windows = []
     window_labels = []
@@ -49,7 +40,9 @@ def create_windows(
             continue
 
         windows.append(window)
-        window_labels.append(label_slice.iloc[0])
+
+        label = label_slice.iloc[0]
+        window_labels.append(label_to_id[label])
 
     # Chuyển list thành numpy array
     if windows:
@@ -60,7 +53,7 @@ def create_windows(
             (0, window_size, features.shape[1])
         )
         y = np.empty((0,))
-
+    print("Label mapping:", label_to_id)
     return X, y, skipped
 
 
